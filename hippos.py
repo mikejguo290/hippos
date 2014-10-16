@@ -23,7 +23,7 @@ defines a hippo for this model.
     def __init__(self,age,gender):
         self.age = age
         self.gender = gender
-        self.birthAge = 0 # birthage is age when last given birth.
+        self.conceptionAge = 0 # conceptionAge is age when last conceived.
         
     def getOlder(self):
         self.age +=1
@@ -40,22 +40,21 @@ defines a hippo for this model.
     def fertile(self):
     """
     Tests if a mother hippo is fertile. A female hippo can only give birth if it is >= 6 years old.
-    A female hippo needs more than 1 year between births. 
+    A female hippo needs more than roughly 2 year between being able to reproduce. 
     """
-        yearsSinceLastBirth = self.age - self.birthAge 
-        print "the hippo has had %d years since it last gave birth" % yearsSinceLastBirth # scaffold
-        return (self.age>= 6) and (self.gender =='Female' and yearsSinceLastBirth > 1.0) 
+        yearsSinceLastConceive = self.age - self.conceptionAge
+        print "the hippo has had %d years since it last gave birth" % yearsSinceLastConceive # scaffold
+        return (self.age>= 6) and (self.gender =='Female' and yearsSinceLastConceive > 2.0) 
 
-        #12 months, not 17 months post gestation rest. because gestation =8 months, so a calf is modelled to be conceived,
-        #gestated and born in the same year. so 4 months goes to waste otherwise.
-
+        # 8 months pregnancy + 17 months with the baby = 25 months , roughly 2 years for a hippo to conceive again.  
+    
     def reproduce(self):
     """
     generates a baby hippo.
     """          
         if self.fertile():
             print 'hippo is fertile'
-            self.birthAge = self.age
+            self.conceptionAge = self.age
             return hippo(-0.66,self.babyGenderGenerator())
         # baby hippo's ages is set to -0.66 at conception because gestation takes 8 months, which is 2/3 of 1 year.
         else:
@@ -68,25 +67,30 @@ def liveOneYear(hippoPopulation):
     for animal in hippoPopulation:
         baby = animal.reproduce()
         if isinstance(baby,hippo):
-            # else, baby is noneType object. nothing returned from reproduction.
+            # check baby is a hippo object rather noneType object. 
             hippoPopulation.append(baby) #the baby at time of conception os -8 months or -0.66 years old. 
         animal.getOlder()
-        print "hippo is %d years old."% animal.age
-        print "hippo is a %s." %animal.gender
+        #print "hippo is %d years old."% animal.age
+        #print "hippo is a %s." %animal.gender
         
         if animal.age > 45.0:
             print 'too old! leave the herd and this mortal coil'
             # remove the animal from the population. actually. all those hippos might be alive! since 1983.
+            # DO NOTHING?###
     print "year over! \n"
     return hippoPopulation
 
 #hippoPopulation= liveOneYear(hippoPopulation) #sometimes print and print destroys each other! whereas save to var + print is good.
 
 def simulateOneRun(hippoPopulation, duration):
-    for i in range(duration): # 31 years! come on! 1983 - 2014
+""" 
+runs liveOnYear on hippoPopulation for duration in years. returns the size of hippoPopulation.
+"""
+    for i in range(duration): # 31 years!  1983 - 2014
         hippoPopulation= liveOneYear(hippoPopulation)
-    return len(hippoPopulation)
+    return len(hippoPopulation) # hippoPopulationSize
         #time.sleep(10)
+        
 def outputToExcel(array,filename):
     workbook = xlwt.Workbook()
     sheet = workbook.add_sheet('pop dist 2014',cell_overwrite_ok=True)
@@ -103,21 +107,22 @@ def outputToExcel(array,filename):
     
     workbook.save('%s.xls'% filename)
 
-j = 0
-dist = []
-while j < 10:
+
+simRuns = 0 
+dist = [] # records the outcomes of each simulation run in terms of hippos numbers. 
+while simRuns < 10: # Max number of simulations runs
     hippoPopulation =[]
-    #initial population in 1984
+    #initialise the population in 1984, with three females and a male.
     for i in range(0,3):
-        hippoPopulation.append(hippo(6.0,'Female'))
+        hippoPopulation.append(hippo(6.0,'Female')) 
     a= simulateOneRun(hippoPopulation, 31)
     dist.append(a)
-    j +=1
+    simRuns +=1
 filename = "hippo's population dist 2014 6 years to maturity"
 outputToExcel(dist, filename)
 
 #print len(hippoPopulation)
-print " "
+#print " "
 
 """
 herd = hippoPopulation[:10]
